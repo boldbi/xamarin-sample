@@ -27,7 +27,7 @@ namespace Xamarin.Forms.Sample
                       <head>
                           <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
                           <script type=""text/javascript"" src=""https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js""></script>
-                          <script type=""text/javascript"" src=""https://cdn.boldbi.com/embedded-sdk/v6.1.8/boldbi-embed.js""></script>
+                          <script type=""text/javascript"" src=""https://cdn.boldbi.com/embedded-sdk/latest/boldbi-embed.js""></script>
                           <script type=""text/javascript"">
                             $(document).ready(function() {
                                 this.dashboard = BoldBI.create({ 
