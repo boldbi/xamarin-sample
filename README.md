@@ -2,35 +2,38 @@
 
 This Bold BI Xamarin sample repository contains the Dashboard embedding sample. This sample demonstrates how to embed the dashboard which is available in your Bold BI server.
 
-This section guides you in using the Bold BI dashboard in your Xamarin sample application.
-
-* [Requirements to run the demo](#requirements-to-run-the-demo)
-* [Using the Xamarin sample](#using-the-xamarin-sample)
-* [Online Demos](#online-demos)
-* [Documentation](#documentation)
-
-## Requirements to run the demo
+## Requirements
 
 The samples require the following to run:
 
-* [Visual Studio 2019](https://visualstudio.microsoft.com/downloads/)
+* [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/)
+* [JDK 17](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 
-## Using the Xamarin sample
+### Supported browsers
+  
+* Google Chrome, Microsoft Edge, and Mozilla Firefox.
 
-* Open the Xamarin embed sample in Visual Studio.
+## Configuration
 
-* Open the `EmbedProperties.cs` file and change the following properties in the file as per your Bold BI Server.
+* Please ensure you have enabled embed authentication on the `embed settings` page. If it is not currently enabled, please refer to the following image or detailed [instructions](https://help.boldbi.com/site-administration/embed-settings/#get-embed-secret-code?utm_source=github&utm_medium=backlinks) to enable it.
 
-| Parameter         | Description                                                                                                                                                   |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **RootUrl**      | Dashboard Server URL (e.g., `http://localhost:5000/bi`, `http://demo.boldbi.com/bi`).                                                                          |
-| **SiteIdentifier** | For the Bold BI Enterprise edition, it should be like `site/site1`. For Bold BI Cloud, it should be an empty string.                                         |
-| **Environment**  | Your Bold BI application environment. (If Cloud, you should use `cloud`; if Enterprise, you should use `enterprise`).                                          |
-| **UserEmail**    | UserEmail of the Admin in your Bold BI, which will be used to get the dashboard list.                                                                          |
-| **EmbedSecret**  | Get your EmbedSecret key from the Embed tab by enabling the `Enable embed authentication` on the [Administration page](https://help.boldbi.com/embedded-bi/site-administration/embed-settings/?utm_source=github&utm_medium=backlinks). |
-| **dashboardId**  | Id of the dashboard you want to embed.                                                                                                                         |
+    ![Embed Settings](images/embed-settings.png)
 
-* Now run the Xamarin sample by using the following command.
+* To download the `embedConfig.json` file, please follow this [link](https://help.boldbi.com/site-administration/embed-settings/#get-embed-configuration-file?utm_source=github&utm_medium=backlinks) for reference. Additionally, you can refer to the following image for visual guidance.
+
+    ![Embed Settings Download](images/embed-settings-download.png)
+    ![EmbedConfig Properties](images/embedconfig-properties.png)
+
+* Copy the downloaded `embedConfig.json` file and paste it into the designated [location](https://github.com/boldbi/xamarin-sample/tree/Authorization-master/Xamarin.Forms.Sample/Xamarin.Forms.Sample) within the application. Please ensure you have placed it in the application, as shown in the following image.
+
+   ![EmbedConfig image](images/embedconfig-image.png)
+
+
+## Run a Sample Using Visual Studio 2022
+
+* Open the Xamarin sample's solution file `Xamarin.Forms.Sample.sln` in Visual Studio and run it.
+
+    ![dashboard image](images/dashboard.png)
 
 Please refer to the [help documentation](https://help.boldbi.com/embedded-bi/javascript-based/samples/v3.3.40-or-later/xamarin/#how-to-run-the-sample?utm_source=github&utm_medium=backlinks) to know how to run the sample.
 
