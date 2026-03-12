@@ -21,36 +21,41 @@ namespace Xamarin.Forms.Sample
         public string GetHtmlString()
         {
             var token = GetEmbedDetails();
-            var html = @"<!DOCTYPE html>
-                  <!DOCTYPE html>
-                  <html style=""height:100%;width:100%"">
-                      <head>
-                          <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
-                          <script type=""text/javascript"" src=""https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js""></script>
-                          <script type=""text/javascript"" src=""https://cdn.boldbi.com/embedded-sdk/latest/boldbi-embed.js""></script>
-                          <script type=""text/javascript"">
-                            $(document).ready(function() {
-                                this.dashboard = BoldBI.create({
-                                    serverUrl:""" + EmbedProperties.RootUrl + "/" + EmbedProperties.SiteIdentifier + "\","
-                                    + "dashboardId: \"" + EmbedProperties.DashboardId + "\","
-                                    + "embedContainerId: \"dashboard\","
-                                    + "width: \"100%\","
-                                    + "height: \"100%\","
-                                    + "embedToken: " + token
-                                + @"}
-                            });
-                            console.log(this.dashboard);
-                            this.dashboard.loadDashboard();
-                        });
-                          </script>
-                      </head>
-                      <body style=""background-color: white;height:100%;width:100%"">
-                          <div id =""viewer-section"" style=""background-color: white;height:100%;width:100%"">
-                              <div id =""dashboard"">
-                              </div>
-                          </div>
-                      </body>
-                  </html>";
+            var tokenJson = JsonConvert.SerializeObject(token);
+            var serverUrlJson = JsonConvert.SerializeObject(EmbedProperties.RootUrl + "/" + EmbedProperties.SiteIdentifier);
+            var dashboardIdJson = JsonConvert.SerializeObject(EmbedProperties.DashboardId);
+            var embedContainerIdJson = JsonConvert.SerializeObject("dashboard");
+            var widthJson = JsonConvert.SerializeObject("100%");
+            var heightJson = JsonConvert.SerializeObject("100%");
+
+            var html = $@"<!DOCTYPE html>
+                <html style=""height:100%;width:100%"">
+                    <head>
+                        <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+                        <script src=""https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js""></script>
+                        <script src=""https://cdn.boldbi.com/embedded-sdk/latest/boldbi-embed.js""></script>
+                        <script>
+                            $(document).ready(function() {{
+                                var dashboard = BoldBI.create({{
+                                    serverUrl: {serverUrlJson},
+                                    dashboardId: {dashboardIdJson},
+                                    embedContainerId: {embedContainerIdJson},
+                                    width: {widthJson},
+                                    height: {heightJson},
+                                    embedToken: {tokenJson}
+                                }});
+                                console.log(dashboard);
+                                dashboard.loadDashboard();
+                            }});
+                        </script>
+                    </head>
+                    <body style=""background-color: white;height:100%;width:100%"">
+                        <div id=""viewer-section"" style=""background-color: white;height:100%;width:100%"">
+                            <div id=""dashboard""></div>
+                        </div>
+                    </body>
+                </html>";
+
             return html;
         }
 
