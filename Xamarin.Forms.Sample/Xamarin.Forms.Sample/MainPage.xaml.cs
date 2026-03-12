@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Net.Http;
-using System.Security.Cryptography;
+using System.Text;
 
 namespace Xamarin.Forms.Sample
 {
@@ -20,89 +20,94 @@ namespace Xamarin.Forms.Sample
 
         public string GetHtmlString()
         {
-            var embedAuthorizeDetails = GetEmbedDetails();
-            var html = @"<!DOCTYPE html>
-                  <!DOCTYPE html>
-                  <html style=""height:100%;width:100%"">
-                      <head>
-                          <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
-                          <script type=""text/javascript"" src=""https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js""></script>
-                          <script type=""text/javascript"" src=""https://cdn.boldbi.com/embedded-sdk/v6.1.8/boldbi-embed.js""></script>
-                          <script type=""text/javascript"">
-                            $(document).ready(function() {
-                                this.dashboard = BoldBI.create({ 
-                                    serverUrl:""" + EmbedProperties.RootUrl + "/" + EmbedProperties.SiteIdentifier + "\","
-                                    + "dashboardId: \"" + EmbedProperties.DashboardId + "\","
-                                    + "embedContainerId: \"dashboard\","
-                                    + "embedType: \"" + EmbedProperties.EmbedType + "\","
-                                    + "environment: \"" + EmbedProperties.Environment + "\","
-                                    + "width: \"100%\","
-                                    + "height: \"100%\","
-                                    + @"expirationTime: 100000,
-                                    authorizationServer:
-                                    {
-                                        url: """","
-                                        + "data: " + embedAuthorizeDetails
-                                + @"},
-                                dashboardSettings:
-                                {
-                                    showExport: false,
-                                    showRefresh: true,
-                                    showMoreOption: true
-                                },
-                                beforeDashboardMobileMenuOpen : function (args) {
-                                 alert(""more option is clicked "");
-                                 }
-                            });
-                            console.log(this.dashboard);
-                            this.dashboard.loadDashboard();
-                        });
-                          </script>
-                      </head>
-                      <body style=""background-color: white;height:100%;width:100%"">
-                          <div id =""viewer-section"" style=""background-color: white;height:100%;width:100%"">
-                              <div id =""dashboard"">
-                              </div>
-                          </div>
-                      </body>
-                  </html>";
+            var token = GetEmbedDetails();
+            var tokenJson = JsonConvert.SerializeObject(token);
+            var serverUrlJson = JsonConvert.SerializeObject(EmbedProperties.RootUrl + "/" + EmbedProperties.SiteIdentifier);
+            var dashboardIdJson = JsonConvert.SerializeObject(EmbedProperties.DashboardId);
+            var embedContainerIdJson = JsonConvert.SerializeObject("dashboard");
+            var widthJson = JsonConvert.SerializeObject("100%");
+            var heightJson = JsonConvert.SerializeObject("100%");
+
+            var html = $@"<!DOCTYPE html>
+                <html style=""height:100%;width:100%"">
+                    <head>
+                        <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
+                        <script src=""https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js""></script>
+                        <script src=""https://cdn.boldbi.com/embedded-sdk/latest/boldbi-embed.js""></script>
+                        <script>
+                            $(document).ready(function() {{
+                                var dashboard = BoldBI.create({{
+                                    serverUrl: {serverUrlJson},
+                                    dashboardId: {dashboardIdJson},
+                                    embedContainerId: {embedContainerIdJson},
+                                    width: {widthJson},
+                                    height: {heightJson},
+                                    embedToken: {tokenJson}
+                                }});
+                                console.log(dashboard);
+                                dashboard.loadDashboard();
+                            }});
+                        </script>
+                    </head>
+                    <body style=""background-color: white;height:100%;width:100%"">
+                        <div id=""viewer-section"" style=""background-color: white;height:100%;width:100%"">
+                            <div id=""dashboard""></div>
+                        </div>
+                    </body>
+                </html>";
+
             return html;
         }
 
         public string GetEmbedDetails()
         {
-            var embedAuthorizeDetails = string.Empty;
-            decimal time = (decimal)Math.Round((DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds / 1000);
-            decimal timeStamp = (decimal)Math.Round((DateTime.Now.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds / 1000);
-            var dashboardServerApiUrl = EmbedProperties.RootUrl + "/api/" + EmbedProperties.SiteIdentifier;
-            var embedQuerString = "embed_nonce=" + Guid.NewGuid() +
-            "&embed_dashboard_id=" + EmbedProperties.DashboardId +
-            "&embed_mode=view" +
-            "&embed_timestamp=" + Math.Round(time) +
-             "&embed_server_timestamp=" + Math.Round(timeStamp) +
-            "&embed_expirationtime=100000";
+            var siteId = string.IsNullOrEmpty(EmbedProperties.SiteIdentifier) ? "" : EmbedProperties.SiteIdentifier;
 
-            embedQuerString += "&embed_user_email=" + EmbedProperties.UserEmail;
-            var embedDetailsUrl = "/embed/authorize?" + embedQuerString.ToLower() + "&embed_signature=" + GetSignatureUrl(embedQuerString.ToLower());
+            // Prepare embed generation payload
+            var embedDetails = new
+            {
+                email = EmbedProperties.UserEmail,
+                serverurl = EmbedProperties.RootUrl,
+                siteidentifier = siteId,
+                embedsecret = EmbedProperties.EmbedSecret,
+                dashboard = new { id = EmbedProperties.DashboardId }
+            };
+
+            string accessToken = null;
+
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri(dashboardServerApiUrl);
-                client.DefaultRequestHeaders.Accept.Clear();
-                var result = client.GetAsync(dashboardServerApiUrl + embedDetailsUrl).Result;
-                embedAuthorizeDetails = result.Content.ReadAsStringAsync().Result;
-            }
-            return embedAuthorizeDetails;
-        }
+                // POST to BoldBI embed authorize endpoint to get access token
+                var requestUrl = EmbedProperties.RootUrl.TrimEnd('/') + "/api/" + siteId + "/embed/authorize";
+                var jsonPayload = JsonConvert.SerializeObject(embedDetails);
+                var httpContent = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
 
-        public string GetSignatureUrl(string message)
-        {
-            var encoding = new System.Text.UTF8Encoding();
-            var keyBytes = encoding.GetBytes(EmbedProperties.EmbedSecret);
-            var messageBytes = encoding.GetBytes(message);
-            using (var hmacsha1 = new HMACSHA256(keyBytes))
-            {
-                var hashMessage = hmacsha1.ComputeHash(messageBytes);
-                return Convert.ToBase64String(hashMessage);
+                var result = client.PostAsync(requestUrl, httpContent).Result;
+                var resultContent = result.Content.ReadAsStringAsync().Result;
+
+                // Try to extract access token from response
+                try
+                {
+                    dynamic tokenResp = JsonConvert.DeserializeObject<dynamic>(resultContent);
+                    if (tokenResp != null)
+                    {
+                        if (tokenResp.Data != null && tokenResp.Data.access_token != null)
+                            accessToken = (string)tokenResp.Data.access_token;
+                        else if (tokenResp.access_token != null)
+                            accessToken = (string)tokenResp.access_token;
+                        else if (tokenResp.data != null && tokenResp.data.access_token != null)
+                            accessToken = (string)tokenResp.data.access_token;
+                    }
+                }
+                catch { /* ignore parse errors */ }
+
+                if (string.IsNullOrEmpty(accessToken))
+                {
+                    // Fallback: use raw response if token extraction failed
+                    accessToken = resultContent;
+                }
+
+                return accessToken;
             }
         }
     }

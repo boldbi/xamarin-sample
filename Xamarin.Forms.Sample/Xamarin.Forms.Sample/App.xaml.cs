@@ -8,6 +8,9 @@ namespace Xamarin.Forms.Sample
     {
         public App()
         {
+            // Load configuration from embedded JSON before creating MainPage
+            ConfigStore.Load();
+
             InitializeComponent();
 
             MainPage = new MainPage();
